@@ -361,6 +361,7 @@ extern struct cpufreq_governor cpufreq_gov_conservative;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_INTERACTIVE)
 extern struct cpufreq_governor cpufreq_gov_interactive;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_interactive)
+<<<<<<< HEAD
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_HOTPLUG)
 extern struct cpufreq_governor cpufreq_gov_hotplug;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_hotplug)
@@ -384,6 +385,8 @@ extern struct cpufreq_governor cpufreq_gov_amplug;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_amplug)
 extern struct cpufreq_governor cpufreq_gov_smartassh3;
 #define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_smartassh3) 
+=======
+>>>>>>> 1dab259... cpufreq: interactive: New 'interactive' governor
 #endif
 
 
