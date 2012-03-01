@@ -11,6 +11,7 @@
 #include "xz_stream.h"
 #include <linux/kernel.h> 
 
+
 /* Hash used to validate the Index field */
 struct xz_dec_hash {
 	vli_type unpadded;
