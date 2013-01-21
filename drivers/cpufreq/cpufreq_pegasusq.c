@@ -787,7 +787,6 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
 	if (p->cur == p->max)
 		return;
 		
-	__cpufreq_driver_target(p, freq, CPUFREQ_RELATION_L);
 }
 
 /*
@@ -1068,7 +1067,6 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	/* if we cannot reduce the frequency anymore, break out early */
 	if (policy->cur == policy->min)
 		return;
-	
 	/*
 	 * The optimal frequency is the frequency that is the lowest that
 	 * can support the current CPU usage without triggering the up
