@@ -168,6 +168,7 @@ config CPU_FREQ_GOV_USERSPACE
 
 	  If in doubt, say Y.
 
+
 config CPU_FREQ_GOV_ONDEMAND
 	tristate "'ondemand' cpufreq policy governor"
 	select CPU_FREQ_TABLE
