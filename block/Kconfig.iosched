@@ -108,16 +108,14 @@ choice
 		  for each queue is defined according to queue priority.
 		  Most suitable for mobile devices.
 
-<<<<<<< HEAD
 	config DEFAULT_CFQ
 		bool "CFQ" if IOSCHED_CFQ=y
 
 	config DEFAULT_NOOP
 		bool "No-op"
-=======
+
 	config DEFAULT_BFQ
 		bool "BFQ" if IOSCHED_BFQ=y
->>>>>>> a1889e6... Added BFQv5 I/O Scheduler
 
 endchoice
 
@@ -128,11 +126,7 @@ config DEFAULT_IOSCHED
 	default "cfq" if DEFAULT_CFQ
 	default "sio" if DEFAULT_SIO
 	default "noop" if DEFAULT_NOOP
-<<<<<<< HEAD
-=======
-	default "row" if DEFAULT_ROW
 	default "bfq" if DEFAULT_BFQ
->>>>>>> a1889e6... Added BFQv5 I/O Scheduler
 
 endmenu
 
