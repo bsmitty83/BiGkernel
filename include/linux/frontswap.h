@@ -124,4 +124,3 @@ static inline void frontswap_init(unsigned type)
 }
 
 #endif /* _LINUX_FRONTSWAP_H */
-

@@ -29,8 +29,8 @@ struct cleancache_ops {
 	void (*put_page)(int, struct cleancache_filekey,
 			pgoff_t, struct page *);
 	void (*invalidate_page)(int, struct cleancache_filekey, pgoff_t);
-  	void (*invalidate_inode)(int, struct cleancache_filekey);
-  	void (*invalidate_fs)(int); 
+	void (*invalidate_inode)(int, struct cleancache_filekey);
+	void (*invalidate_fs)(int);
 };
 
 extern struct cleancache_ops
@@ -41,7 +41,11 @@ extern int  __cleancache_get_page(struct page *);
 extern void __cleancache_put_page(struct page *);
 extern void __cleancache_invalidate_page(struct address_space *, struct page *);
 extern void __cleancache_invalidate_inode(struct address_space *);
+<<<<<<< HEAD
 extern void __cleancache_invalidate_fs(struct super_block *); 
+=======
+extern void __cleancache_invalidate_fs(struct super_block *);
+>>>>>>> 1f6b3cf... Cleancache & frontswap new headers
 extern int cleancache_enabled;
 
 #ifdef CONFIG_CLEANCACHE
@@ -120,3 +124,4 @@ static inline void cleancache_invalidate_fs(struct super_block *sb)
 }
 
 #endif /* _LINUX_CLEANCACHE_H */
+

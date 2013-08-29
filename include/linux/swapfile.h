@@ -11,4 +11,3 @@
     extern int try_to_unuse(unsigned int, bool, unsigned long);
 
     #endif /* _LINUX_SWAPFILE_H */
-
