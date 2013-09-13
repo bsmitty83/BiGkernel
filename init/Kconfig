@@ -912,31 +912,13 @@ endif
 choice
  prompt "Optimization Level"
   default CC_OPTIMIZE_DEFAULT
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> b34ee42... fixed previous commits, added configurable -o flags
 config CC_OPTIMIZE_FOR_SIZE
  bool "Optimize for Size"
  bool "Use -Os"
  help
   Enabling this option will pass "-Os" instead of "-O2" to gcc
-<<<<<<< HEAD
   resulting in a smaller kernel.
-=======
-  resulting in a smaller kernel. 
->>>>>>> b34ee42... fixed previous commits, added configurable -o flags
-
-config CC_OPTIMIZE_DEFAULT
- bool "Optimize Default Level"
- bool "Use -O2"
-
-config CC_OPTIMIZE_O3
- bool "Optimize Linaro Max Level"
- bool "Use -O3"
-
-endchoice
 
 config CC_OPTIMIZE_DEFAULT
  bool "Optimize Default Level"
