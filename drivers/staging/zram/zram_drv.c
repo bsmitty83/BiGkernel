@@ -206,45 +206,29 @@ out:
 	zram->table[index].offset = 0;
 }
 
-static void handle_zero_page(struct bio_vec *bvec)
+static void handle_zero_page(struct page *page)
 {
 	void *user_mem;
 
-	user_mem = kmap_atomic(page);
-	memset(user_mem + bvec->bv_offset, 0, bvec->bv_len);
-	kunmap_atomic(user_mem);
+	user_mem = kmap_atomic(page, KM_USER0);
+	memset(user_mem, 0, PAGE_SIZE);
+	kunmap_atomic(user_mem, KM_USER0);
 
 	flush_dcache_page(page);
 }
 
-static inline int is_partial_io(struct bio_vec *bvec)
-{
-	return bvec->bv_len != PAGE_SIZE;
-}
-
-static int zram_decompress_page(struct zram *zram, char *mem, u32 index)
+static void handle_uncompressed_page(struct zram *zram,
+				struct page *page, u32 index)
 {
 	unsigned char *user_mem, *cmem;
 
-	if (!handle || zram_test_flag(zram, index, ZRAM_ZERO)) {
-		memset(mem, 0, PAGE_SIZE);
-		return 0;
-	}
+	user_mem = kmap_atomic(page, KM_USER0);
+	cmem = kmap_atomic(zram->table[index].page, KM_USER1) +
+			zram->table[index].offset;
 
-	cmem = zs_map_object(zram->mem_pool, handle, ZS_MM_RO);
-	if (zram->table[index].size == PAGE_SIZE)
-		memcpy(mem, cmem, PAGE_SIZE);
-	else
-		ret = zram_comp_op(ZRAM_COMPOP_DECOMPRESS, cmem,
-					zram->table[index].size, mem, &clen);
-	zs_unmap_object(zram->mem_pool, handle);
-
-	/* Should NEVER happen. Return bio error if it does. */
-	if (unlikely(ret != 0)) {
-		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
-		zram_stat64_inc(zram, &zram->stats.failed_reads);
-		return ret;
-	}
+	memcpy(user_mem, cmem, PAGE_SIZE);
+	kunmap_atomic(user_mem, KM_USER0);
+	kunmap_atomic(cmem, KM_USER1);
 
 	flush_dcache_page(page);
 }
@@ -316,13 +300,14 @@ static void zram_read(struct zram *zram, struct bio *bio)
 		index++;
 	}
 
-	if ((clen == PAGE_SIZE) && !is_partial_io(bvec))
-		src = kmap_atomic(page);
-	memcpy(cmem, src, clen);
-	if ((clen == PAGE_SIZE) && !is_partial_io(bvec))
-		kunmap_atomic(src);
+	set_bit(BIO_UPTODATE, &bio->bi_flags);
+	bio_endio(bio, 0);
+	return;
 
-	zs_unmap_object(zram->mem_pool, handle);
+out:
+	bio_io_error(bio);
+}
+
 static void zram_write(struct zram *zram, struct bio *bio)
 {
 	int i;
@@ -774,4 +759,5 @@ module_exit(zram_exit);
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Nitin Gupta <ngupta@vflare.org>");
 MODULE_DESCRIPTION("Compressed RAM Block Device");
+MODULE_ALIAS("devname:zram");
 
