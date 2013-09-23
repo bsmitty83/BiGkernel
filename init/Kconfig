@@ -1216,7 +1216,7 @@ config PCI_QUIRKS
 	depends on PCI
 	help
 	  This enables workarounds for various PCI chipset
-          bugs/quirks. Disable this only if your target machine is
+          bugs/quirks. Disabrompt "Choose SLAB allocator" le this only if your target machine is
           unaffected by PCI quirks.
 
 config SLUB_DEBUG
@@ -1254,6 +1254,11 @@ config SLAB
 	  well in all environments. It organizes cache hot objects in
 	  per cpu and per node queues.
 
+config SLQB
+          bool "SLQB (Queued allocator)"
+          help
+            SLQB is a proposed new slab allocator.
+ 
 config SLUB
 	bool "SLUB (Unqueued Allocator)"
 	help
