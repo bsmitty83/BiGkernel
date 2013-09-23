@@ -382,6 +382,8 @@ extern struct cpufreq_governor cpufreq_gov_hyper;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_AMPLUG)
 extern struct cpufreq_governor cpufreq_gov_amplug;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_amplug)
+extern struct cpufreq_governor cpufreq_gov_smartassh3;
+#define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_smartassh3) 
 #endif
 
 
