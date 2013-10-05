@@ -41,11 +41,7 @@ extern int  __cleancache_get_page(struct page *);
 extern void __cleancache_put_page(struct page *);
 extern void __cleancache_invalidate_page(struct address_space *, struct page *);
 extern void __cleancache_invalidate_inode(struct address_space *);
-<<<<<<< HEAD
-extern void __cleancache_invalidate_fs(struct super_block *); 
-=======
 extern void __cleancache_invalidate_fs(struct super_block *);
->>>>>>> 1f6b3cf... Cleancache & frontswap new headers
 extern int cleancache_enabled;
 
 #ifdef CONFIG_CLEANCACHE
