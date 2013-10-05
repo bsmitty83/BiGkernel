@@ -72,7 +72,9 @@ unsigned int screen_off_max_freq;
 unsigned int screen_on_min_freq;
 static bool omap_cpufreq_ready;
 static bool omap_cpufreq_suspended;
-static unsigned int current_cooling_level;
+static int oc_val;
+static unsigned int stock_freq_max;
+
 
 static unsigned int omap_getspeed(unsigned int cpu)
 {
@@ -136,7 +138,7 @@ static int omap_cpufreq_scale(unsigned int target_freq, unsigned int cur_freq)
 		freqs.new = max_capped;
 
 	if (min_capped && freqs.new < min_capped)
-		freqs.new = min_capped;
+		freqs.new = min_capped;	
 
 	if ((freqs.old == freqs.new) && (cur_freq = freqs.new))
 		return 0;
@@ -176,7 +178,7 @@ static unsigned int omap_thermal_lower_speed(void)
 	unsigned int curr;
 	int i;
 
-	curr = omap_getspeed(0);
+	curr = max_thermal;
 
 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
 		if (freq_table[i].frequency > max &&
@@ -264,6 +266,7 @@ static int omap_target(struct cpufreq_policy *policy,
 
 	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
 			relation, &i);
+
 	if (ret) {
 		dev_dbg(mpu_dev, "%s: cpu%d: no freq match for %d(ret=%d)\n",
 			__func__, policy->cpu, target_freq, ret);
@@ -273,6 +276,12 @@ static int omap_target(struct cpufreq_policy *policy,
 	mutex_lock(&omap_cpufreq_lock);
 
 	current_target_freq = freq_table[i].frequency;
+
+	if (current_target_freq > stock_freq_max) {
+		current_target_freq = policy->max;
+		if (current_target_freq == policy->cur)
+			current_target_freq = stock_freq_max;
+	}
 
 	if (!omap_cpufreq_suspended)
 		ret = omap_cpufreq_scale(current_target_freq, policy->cur);
@@ -299,10 +308,10 @@ static void omap_cpu_early_suspend(struct early_suspend *h)
 			if (min_capped)
 				min_capped = 0;
 	}
-
+	
 	if (min_capped) {
 		min_capped = 0;
-
+		
 		if (!max_capped) {
 			cur = omap_getspeed(0);
 		}
@@ -318,18 +327,18 @@ static void omap_cpu_late_resume(struct early_suspend *h)
 	unsigned int cur;
 
 	mutex_lock(&omap_cpufreq_lock);
-
+	
 	if (screen_on_min_freq) {
 		min_capped = screen_on_min_freq;
-
+	
 		cur = omap_getspeed(0);
 		if (cur < min_capped)
 			omap_cpufreq_scale(min_capped, cur);
-
+			
 			if (max_capped)
 				max_capped = 0;
 	}
-
+		
 	if (max_capped) {
 		max_capped = 0;
 
@@ -354,136 +363,6 @@ static inline void freq_table_free(void)
 	if (atomic_dec_and_test(&freq_table_users))
 		opp_free_cpufreq_table(mpu_dev, &freq_table);
 }
-
-#if defined(CONFIG_THERMAL_FRAMEWORK) || defined(CONFIG_OMAP4_DUTY_CYCLE)
-void omap_thermal_step_freq_down(void)
-{
-	unsigned int cur;
-
-	if (!omap_cpufreq_ready) {
-		pr_warn_once("%s: Thermal throttle prior to CPUFREQ ready\n",
-			     __func__);
-		return;
-	}
-
-	mutex_lock(&omap_cpufreq_lock);
-
-	max_thermal = omap_thermal_lower_speed();
-
-	pr_warn("%s: temperature too high, starting cpu throttling at max %u\n",
-		__func__, max_thermal);
-
-	if (!omap_cpufreq_suspended) {
-		cur = omap_getspeed(0);
-		if (cur > max_thermal)
-			omap_cpufreq_scale(max_thermal, cur);
-	}
-
-	mutex_unlock(&omap_cpufreq_lock);
-}
-
-void omap_thermal_step_freq_up(void)
-{
-	unsigned int cur;
-
-	if (!omap_cpufreq_ready)
-		return;
-
-	mutex_lock(&omap_cpufreq_lock);
-
-	if (max_thermal == max_freq) {
-		pr_warn("%s: not throttling\n", __func__);
-		goto out;
-	}
-
-	max_thermal = max_freq;
-
-	pr_warn("%s: temperature reduced, stepping up to %i\n",
-		__func__, current_target_freq);
-
-	if (!omap_cpufreq_suspended) {
-		cur = omap_getspeed(0);
-		omap_cpufreq_scale(current_target_freq, cur);
-	}
-out:
-	mutex_unlock(&omap_cpufreq_lock);
-}
-
-/*
- * cpufreq_apply_cooling: based on requested cooling level, throttle the cpu
- * @param cooling_level: percentage of required cooling at the moment
- *
- * The maximum cpu frequency will be readjusted based on the required
- * cooling_level.
-*/
-static int cpufreq_apply_cooling(struct thermal_dev *dev,
-				int cooling_level)
-{
-	if (cooling_level < current_cooling_level) {
-		pr_err("%s: Unthrottle cool level %i curr cool %i\n",
-			__func__, cooling_level, current_cooling_level);
-		omap_thermal_step_freq_up();
-	} else if (cooling_level > current_cooling_level) {
-		pr_err("%s: Throttle cool level %i curr cool %i\n",
-			__func__, cooling_level, current_cooling_level);
-		omap_thermal_step_freq_down();
-	}
-
-	current_cooling_level = cooling_level;
-
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_OMAP4_DUTY_CYCLE
-
-static struct duty_cycle_dev duty_dev = {
-	.cool_device = cpufreq_apply_cooling,
-};
-
-static int __init omap_duty_cooling_init(void)
-{
-	return duty_cooling_dev_register(&duty_dev);
-}
-
-static void __exit omap_duty_cooling_exit(void)
-{
-	duty_cooling_dev_unregister();
-}
-
-
-#else
-
-static int __init omap_duty_cooling_init(void) { return 0; };
-static void __exit omap_duty_cooling_exit(void) { };
-
-#endif
-
-#ifdef CONFIG_THERMAL_FRAMEWORK
-
-static struct thermal_dev_ops cpufreq_cooling_ops = {
-	.cool_device = cpufreq_apply_cooling,
-};
-
-static struct thermal_dev thermal_dev = {
-	.name		= "cpufreq_cooling",
-	.domain_name	= "cpu",
-	.dev_ops	= &cpufreq_cooling_ops,
-};
-
-static int __init omap_cpufreq_cooling_init(void)
-{
-	return thermal_cooling_dev_register(&thermal_dev);
-}
-
-static void __exit omap_cpufreq_cooling_exit(void)
-{
-	thermal_governor_dev_unregister(&thermal_dev);
-}
-#else
-static int __init omap_cpufreq_cooling_init(void) { return 0; }
-static void __exit omap_cpufreq_cooling_exit(void) { }
-#endif
 
 static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 {
@@ -516,19 +395,13 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 
 	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
 
-#if defined(CONFIG_OMAP_OCFREQ_1400) || defined(CONFIG_OMAP_OCFREQ_1600) || defined(CONFIG_OMAP_OCFREQ_1800) || defined(CONFIG_OMAP_OCFREQ_2000)
-	policy->max = 1200000;
-	policy->min = 350000;
-#else
-	policy->max = policy->cpuinfo.max_freq;
-	policy->min = policy->cpuinfo.min_freq;
-#endif
+	policy->min = 192000;
+	policy->max = stock_freq_max = 1228800;
 	policy->cur = omap_getspeed(policy->cpu);
 
 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
 		max_freq = max(freq_table[i].frequency, max_freq);
 	max_thermal = max_freq;
-	current_cooling_level = 0;
 
 	/*
 	 * On OMAP SMP configuartion, both processors share the voltage
@@ -543,8 +416,7 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 	}
 
 	/* FIXME: what's the actual transition time? */
-	policy->cpuinfo.transition_latency = 30 * 1000;
-
+	policy->cpuinfo.transition_latency = 30000;
 #ifdef CONFIG_CUSTOM_VOLTAGE
 	customvoltage_register_freqmutex(&omap_cpufreq_lock);
 #endif
@@ -627,7 +499,7 @@ static ssize_t store_screen_on_freq(struct cpufreq_policy *policy,
 	if (ret != 1)
 		return -EINVAL;
 
-	mutex_lock(&omap_cpufreq_lock);
+	mutex_lock(&omap_cpufreq_lock);	
 
 	ret = cpufreq_frequency_table_target(policy, freq_table, freq,
 		CPUFREQ_RELATION_H, &index);
@@ -653,6 +525,18 @@ struct freq_attr omap_cpufreq_attr_screen_on_freq = {
 	.store = store_screen_on_freq,
 };
 
+static ssize_t show_gpu_clock(struct cpufreq_policy *policy, char *buf) {
+	struct clk *clk = clk_get(NULL, "dpll_per_m7x2_ck");	
+	return sprintf(buf, "%lu Mhz\n", clk->rate/1000000);
+}
+
+static struct freq_attr gpu_clock = {
+    .attr = {.name = "gpu_clock",
+	     .mode=0644,
+    },
+    .show = show_gpu_clock,
+};
+
 #ifdef CONFIG_CUSTOM_VOLTAGE
 static ssize_t show_UV_mV_table(struct cpufreq_policy * policy, char * buf)
 {
@@ -673,10 +557,54 @@ static struct freq_attr omap_UV_mV_table = {
 };
 #endif
 
+/*
+ * Variable GPU OC - sysfs interface for cycling through different GPU top speeds
+ * Author: imoseyon@gmail.com
+ *
+*/
+static ssize_t show_gpu_oc(struct cpufreq_policy *policy, char *buf)
+{
+	return sprintf(buf, "%d\n", oc_val);
+}
+static ssize_t store_gpu_oc(struct cpufreq_policy *policy, const char *buf, size_t size)
+{
+	int prev_oc, ret1, ret2; 
+        struct device *dev;
+	unsigned long gpu_freqs[3] = {307200000,384000000,512000000};
+
+	prev_oc = oc_val;
+	if (prev_oc < 0 || prev_oc > 2) {
+		// shouldn't be here
+		pr_info("[imoseyon] gpu_oc error - bailing\n");	
+		return size;
+	}
+
+	sscanf(buf, "%d\n", &oc_val);
+	if (oc_val < 0 ) oc_val = 0;
+	if (oc_val > 2 ) oc_val = 2;
+	if (prev_oc == oc_val) return size;
+
+        dev = omap_hwmod_name_get_dev("gpu");
+        ret1 = opp_disable(dev, gpu_freqs[prev_oc]);
+        ret2 = opp_enable(dev, gpu_freqs[oc_val]);
+        pr_info("[imoseyon] gpu top speed changed from %lu to %lu (%d,%d)\n", 
+		gpu_freqs[prev_oc], gpu_freqs[oc_val], ret1, ret2);
+
+	return size;
+}
+
+static struct freq_attr gpu_oc = {
+	.attr = {.name = "gpu_oc", .mode=0666,},
+	.show = show_gpu_oc,
+	.store = store_gpu_oc,
+};
+
 static struct freq_attr *omap_cpufreq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
 	&omap_cpufreq_attr_screen_off_freq,
 	&omap_cpufreq_attr_screen_on_freq,
+	&gpu_clock,
+	&gpu_oc,
 #ifdef CONFIG_CUSTOM_VOLTAGE
 	&omap_UV_mV_table,
 #endif
@@ -733,6 +661,8 @@ static int __init omap_cpufreq_init(void)
 {
 	int ret;
 
+	oc_val = 1;
+
 	if (cpu_is_omap24xx())
 		mpu_clk_name = "virt_prcm_set";
 	else if (cpu_is_omap34xx())
@@ -769,15 +699,6 @@ static int __init omap_cpufreq_init(void)
 		if (t)
 			pr_warn("%s_init: platform_driver_register failed\n",
 				__func__);
-		ret = omap_cpufreq_cooling_init();
-
-		if (ret)
-			return ret;
-
-		ret = omap_duty_cooling_init();
-		if (ret)
-			pr_warn("%s: omap_duty_cooling_init failed\n",
-				__func__);
 	}
 
 	return ret;
@@ -785,8 +706,6 @@ static int __init omap_cpufreq_init(void)
 
 static void __exit omap_cpufreq_exit(void)
 {
-	omap_cpufreq_cooling_exit();
-	omap_duty_cooling_exit();
 	cpufreq_unregister_driver(&omap_driver);
 
 	unregister_early_suspend(&omap_cpu_early_suspend_handler);
