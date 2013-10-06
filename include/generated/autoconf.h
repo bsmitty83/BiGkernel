@@ -1,6 +1,6 @@
 /*
  * Automatically generated C config: don't edit
- * Linux/arm 3.0.98 Kernel Configuration
+ * Linux/arm 3.0.99 Kernel Configuration
  */
 #define CONFIG_ARCH_OMAP 1
 #define CONFIG_RING_BUFFER 1
