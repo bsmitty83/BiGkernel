@@ -10,6 +10,7 @@ deps_scripts/basic/fixdep := \
     $(wildcard include/config/boom.h) \
   /usr/include/x86_64-linux-gnu/sys/types.h \
   /usr/include/features.h \
+  /usr/include/stdc-predef.h \
   /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -22,6 +23,7 @@ deps_scripts/basic/fixdep := \
   /usr/include/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endian.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap-16.h \
   /usr/include/x86_64-linux-gnu/sys/select.h \
   /usr/include/x86_64-linux-gnu/bits/select.h \
   /usr/include/x86_64-linux-gnu/bits/sigset.h \
@@ -41,6 +43,7 @@ deps_scripts/basic/fixdep := \
   /usr/include/x86_64-linux-gnu/bits/unistd.h \
   /usr/include/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl2.h \
   /usr/include/string.h \
   /usr/include/xlocale.h \
@@ -51,6 +54,7 @@ deps_scripts/basic/fixdep := \
   /usr/include/x86_64-linux-gnu/bits/waitflags.h \
   /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
   /usr/include/alloca.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib.h \
   /usr/include/stdio.h \
   /usr/include/libio.h \
@@ -78,6 +82,7 @@ deps_scripts/basic/fixdep := \
   /usr/include/x86_64-linux-gnu/sys/uio.h \
   /usr/include/x86_64-linux-gnu/bits/uio.h \
   /usr/include/x86_64-linux-gnu/bits/socket.h \
+  /usr/include/x86_64-linux-gnu/bits/socket_type.h \
   /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
   /usr/include/x86_64-linux-gnu/asm/socket.h \
   /usr/include/asm-generic/socket.h \

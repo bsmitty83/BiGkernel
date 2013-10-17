@@ -5,6 +5,7 @@ source_scripts/kconfig/zconf.tab.o := scripts/kconfig/zconf.tab.c
 deps_scripts/kconfig/zconf.tab.o := \
   /usr/include/ctype.h \
   /usr/include/features.h \
+  /usr/include/stdc-predef.h \
   /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -15,6 +16,7 @@ deps_scripts/kconfig/zconf.tab.o := \
   /usr/include/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endian.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap-16.h \
   /usr/include/xlocale.h \
   /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
   /usr/include/stdio.h \
@@ -39,6 +41,7 @@ deps_scripts/kconfig/zconf.tab.o := \
   /usr/include/x86_64-linux-gnu/sys/sysmacros.h \
   /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
   /usr/include/alloca.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib.h \
   /usr/include/string.h \
   /usr/include/x86_64-linux-gnu/bits/string.h \
@@ -85,6 +88,7 @@ deps_scripts/kconfig/zconf.tab.o := \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl2.h \
   scripts/kconfig/expr.c \
   scripts/kconfig/symbol.c \

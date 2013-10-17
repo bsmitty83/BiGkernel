@@ -1,6 +1,6 @@
 /*
  * Automatically generated C config: don't edit
- * Linux/arm 3.0.99 Kernel Configuration
+ * Linux/arm 3.0.100 Kernel Configuration
  */
 #define CONFIG_ARCH_OMAP 1
 #define CONFIG_RING_BUFFER 1
@@ -155,6 +155,7 @@
 #define CONFIG_USB_G_ANDROID 1
 #define CONFIG_ARM_ERRATA_764369 1
 #define CONFIG_CRYPTO_TWOFISH_COMMON 1
+#define CONFIG_PVR_GOVERNOR 1
 #define CONFIG_LTE_MODEM_CMC221 1
 #define CONFIG_RTC_INTF_PROC 1
 #define CONFIG_CPU_IDLE_GOV_MENU 1
@@ -495,6 +496,7 @@
 #define CONFIG_XZ_DEC_BCJ 1
 #define CONFIG_PM_SLEEP 1
 #define CONFIG_I2C 1
+#define CONFIG_DEBUG_VM 1
 #define CONFIG_FRAME_POINTER 1
 #define CONFIG_BT_HIDP 1
 #define CONFIG_CPU_ABRT_EV7 1
